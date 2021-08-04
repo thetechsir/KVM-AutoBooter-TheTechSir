@@ -1,0 +1,15 @@
+#/etc/systemd/system/kvmBoot-Win.service
+
+[Unit]
+Description=win-kvm-boot
+ConditionKernelCommandLine=win=0
+[Service]
+#User=<user e.g. root>
+WorkingDirectory=/
+#ExecStart=/bin/true ./kvmBoot-Win.sh
+Type=oneshot
+TimeoutSec=0
+RemainAfterExit=yes
+ExecStart=/bin/bash -c 'cd / && ./kvmBoot-Win.sh'
+[Install]
+WantedBy=multi-user.target

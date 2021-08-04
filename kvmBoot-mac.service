@@ -1,0 +1,14 @@
+#/etc/systemd/system/kvmBoot-mac.service
+[Unit]
+Description=mac-kvm-boot
+ConditionKernelCommandLine=mac=0
+[Service]
+#User=<user e.g. root>
+WorkingDirectory=/
+#ExecStart=/bin/true ./kvmBoot-mac.sh
+Type=oneshot
+TimeoutSec=0
+RemainAfterExit=yes
+ExecStart=/bin/bash -c 'cd / && ./kvmBoot-mac.sh'
+[Install]
+WantedBy=multi-user.target

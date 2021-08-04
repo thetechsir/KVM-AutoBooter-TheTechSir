@@ -1,0 +1,125 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2628
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue-Bold;\f1\fnil\fcharset0 HelveticaNeue;\f2\fnil\fcharset0 ComicSansMS-Bold;
+\f3\fnil\fcharset0 ComicSansMS;}
+{\colortbl;\red255\green255\blue255;\red255\green255\blue11;\red61\green255\blue255;\red27\green128\blue255;
+\red252\green41\blue19;\red240\green0\blue92;\red170\green125\blue255;\red36\green255\blue255;\red38\green255\blue255;
+}
+{\*\expandedcolortbl;;\cssrgb\c100000\c100000\c0;\cssrgb\c25530\c100000\c100000;\cssrgb\c11095\c58865\c100000;
+\cssrgb\c100000\c25745\c7993;\cssrgb\c96309\c12481\c43306;\cssrgb\c72909\c58657\c100000;\cssrgb\c4983\c100000\c100000;\cssrgb\c8302\c100000\c100000;
+}
+\margl1440\margr1440\vieww13360\viewh19680\viewkind0
+\deftab560
+\pard\pardeftab560\partightenfactor0
+
+\f0\b\fs40 \cf0 Vfio scripting commands 
+\f1\b0\fs26 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 \
+
+\f2\b \cf2 Systemd service creation\
+
+\f3\b0 \
+sudo nano /etc/systemd/system/kvmBoot-Win.service\
+####### in file 
+\f1 \cf0 \
+\cf3 [Unit]\
+Description=win-kvm-boot\
+
+\f0\b ConditionKernelCommandLine=
+\fs36 \cf4 win=0\cf3 \
+
+\f1\b0\fs26 [Service]\
+#User=<user e.g. root>\
+WorkingDirectory=/\
+#ExecStart=/bin/true ./kvmBoot-Win.sh\
+Type=oneshot\
+TimeoutSec=0\
+RemainAfterExit=yes\
+ExecStart=/bin/bash -c 'cd / && ./kvmBoot-Win.sh'\
+[Install]\
+WantedBy=multi-user.target\cf0 \
+\
+
+\f3 \cf2 sudo nano /etc/systemd/system/kvmBoot-mac.service\
+##### in file
+\f1 \cf0 \
+\cf5 [Unit]\
+Description=mac-kvm-boot\
+
+\f0\b \cf5 ConditionKernelCommandLine=
+\f2\fs28 \cf6 mac=0\cf7 \
+
+\f1\b0\fs26 \cf5 [Service]\
+#User=<user e.g. root>\
+WorkingDirectory=/\
+#ExecStart=/bin/true ./kvmBoot-mac.sh\
+Type=oneshot\
+TimeoutSec=0\
+RemainAfterExit=yes\
+ExecStart=/bin/bash -c 'cd / && ./kvmBoot-mac.sh'\
+[Install]\
+WantedBy=multi-user.target\cf0 \
+\
+### inside youre mac or win kvmBoot.sh\
+sudo virsh start \{vmname\} \
+\
+\
+
+\f3 \cf8 ### win\
+menuentry "Nvidia VFIO Win11" \{\
+     icon     /EFI/refind/os_win.png\
+    volume   "gtxArch"\
+\
+    loader   /boot/vmlinuz-linux-vfio\
+    initrd   /boot/initramfs-linux-vfio.img\
+    options  "root=LABEL=gtxArch rw resume=/dev/nvme0n1p2 
+\f2\b\fs36 \cf4 win=0 \
+
+\f3\b0\fs20 \cf9 video=efifb:off quiet text iommu=pt intel_iommu=on vt.global_cursor_default=0 loglevel=3 optimus-manager.startup=integrated \
+systemd.unit=multi-user.target vfio-pci.ids=1462:7b98,8086:a305,1462:7b98,8086:a348,1462:9b98,8086:a323,1462:7b98\
+,8086:a3234,1462:7b98,8086:a324\
+,8086:15bc,14e4:43a0,106b:0117,1462:341b,1462:aaf0,1002:67df,1002:aaf0,10de:2182,10de:1aeb,10de:1aec,10de:1aed \
+initrd=boot/initramfs-linux-vfio.img" \
+  submenuentry "Boot macOS also" \{\
+        add_options "mac=0 vfio-pci.ids=8086:a36d,1462:7b98,8086:a36f,1002:67df,1462:341b,1002:aaf0,1462:aaf0,14e4:43a0,106b:0117"
+\fs26 \
+ \
+    \}\
+\
+    submenuentry "Boot to SDDM" \{\
+        add_options "systemd.unit=graphical.target"\
+    \}\
+    enabled\
+\}\
+\cf0 \
+\
+\cf5 ### gtxArch for Mac vfio\
+menuentry "VFIO Kernel MacOS" \{\
+    icon     /EFI/refind/os_mac.png\
+    volume   "gtxArch"\
+    loader   /boot/vmlinuz-linux-vfio\
+    initrd   /boot/initramfs-linux-vfio.img\
+    options  "root=LABEL=gtxArch rw resume=/dev/nvme0n1p2
+\f2\b\fs36 \cf6  mac=0
+\f3\b0\fs26 \cf5  \
+
+\fs20 video=efifb:off quiet text iommu=pt intel_iommu=on vt.global_cursor_default=0 loglevel=3 optimus-manager.\
+startup=integrated systemd.unit=multi-user.target vfio-pci.ids=1462:7b98,8086:a305,1462:7b98,8086:a348,1462:9b98,\
+8086:a323,1462:7b98,8086:a3234,1462:7b98,8086:a324,8086:15bc,14e4:43a0,106b:0117,\
+1462:341b,1462:aaf0,1002:67df,1002:aaf0,8086:a36d,1462:7b98,8086:a36f,8086:7270 initrd=boot/initramfs-linux-vfio.img
+\fs26 "\
+    submenuentry "Boot using fallback initramfs" \{\
+        initrd /boot/initramfs-linux-fallback.img\
+    \}\
+    submenuentry "Boot to sddm" \{\
+        add_options "systemd.unit=graphical.target"\
+    \}\
+    enabled\
+\}\cf0 \
+\
+
+\f1 \
+\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf0 \
+}
